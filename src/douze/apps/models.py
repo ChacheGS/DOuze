@@ -178,7 +178,9 @@ class Logtail:
 
 @dataclass
 class LogDestinations:
-    NAME_PATTERN = r"""^[A-Za-z0-9()\[\]'"][-A-Za-z0-9_. \/()\[\]]{0,40}[A-Za-z0-9()\[\]'"]$"""
+    NAME_PATTERN = (
+        r"""^[A-Za-z0-9()\[\]'"][-A-Za-z0-9_. \/()\[\]]{0,40}[A-Za-z0-9()\[\]'"]$"""
+    )
 
     name: Text
     papertrail: Optional[Papertrail] = None

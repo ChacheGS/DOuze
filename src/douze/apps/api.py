@@ -10,22 +10,19 @@ from .models import *
 
 
 class AppsApi(DoApi):
+    BASE_URL = urljoin(DoApi.BASE_URL, "apps/")
+
     def __init__(self, root_api: DoApi):
         super().__init__(root_api.api_token)
-        self.BASE_URL = urljoin(super().BASE_URL, "apps")
 
     def init_serialize(self) -> Callable[[Any], Any]:
         return IgnoreNoneSerializer().serialize
 
-    @api.get("apps?page={page}")
+    @api.get("?page={page}")
     def _apps_list(self, page) -> AppCollection:
         """
         Fetches one page of Apps list.
         """
-
-    def on_response(self, request: hm.Request, response: hm.Response) -> None:
-        js = response.json()
-        # print(js["apps"][0]["spec"]["databases"])
 
     def apps_list(self) -> Iterator[App]:
         """
@@ -33,11 +30,9 @@ class AppsApi(DoApi):
         active deployment as well as any in progress ones will also be
         included for each app.
         """
-        for app in self._iterate_collection(self._apps_list, "apps"):
-            if isinstance(app, App):
-                yield app
+        yield from self._iterate_collection(self._apps_list, "apps")
 
-    @api.get("apps/{app_id}", hint="app")
+    @api.get("{app_id}", hint="app")
     def _app_get_by_id(self, app_id: Text) -> App:
         """
         Retrieve details about an existing app by its ID.
@@ -77,13 +72,13 @@ class AppsApi(DoApi):
         Create a new app by submitting an app specification.
         """
 
-    @api.put("apps/{app_id}", json=lambda app_spec: {"spec": app_spec}, hint="app")
+    @api.put("{app_id}", json=lambda app_spec: {"spec": app_spec}, hint="app")
     def app_update(self, app_id: Text, app_spec: AppSpec) -> App:
         """
         Update an existing app by submitting a new app specification.
         """
 
-    @api.delete("apps/{app_id}", hint="id")
+    @api.delete("{app_id}", hint="id")
     def app_delete(self, app_id: Text) -> Text:
         """
         UNTESTED
@@ -91,7 +86,7 @@ class AppsApi(DoApi):
         permanently shut down and the app deleted.
         """
 
-    @api.get("apps/{app_id}/deployments?page={page}")
+    @api.get("{app_id}/deployments?page={page}")
     def _app_deployments_list(self, app_id: Text, page: int) -> AppDeploymentCollection:
         """
         Fetches one page of Deployments list.
@@ -110,7 +105,7 @@ class AppsApi(DoApi):
             partial(self._app_deployments_list, app_id), "deployments"
         )
 
-    @api.post("apps/{app_id}", hint="deployment")
+    @api.post("{app_id}", hint="deployment")
     def app_deployment_create(self, app_id: Text) -> AppDeployment:
         """
         Creating an app deployment will pull the latest changes from your
@@ -126,7 +121,7 @@ class AppsApi(DoApi):
         The AppDeployment that was just created.
         """
 
-    @api.get("apps/{app_id}/deployments/{deployment_id}")
+    @api.get("{app_id}/deployments/{deployment_id}")
     def app_deployment_get(self, app_id: Text, deployment_id: Text) -> AppDeployment:
         """
         Retrieve information about an app deployment.
@@ -142,7 +137,7 @@ class AppsApi(DoApi):
         The requested deployment.
         """
 
-    @api.post("apps/{app_id}/deployments/{deployment_id}/cancel")
+    @api.post("{app_id}/deployments/{deployment_id}/cancel")
     def app_deployment_cancel(self, app_id: Text, deployment_id: Text) -> AppDeployment:
         """
         Immediately cancel an in-progress deployment.
